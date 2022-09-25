@@ -1,6 +1,6 @@
-package com.league.log.wrappers;
+package com.league.spring.log.wrappers;
 
-import com.league.log.streams.TeeServletOutputStream;
+import com.league.spring.log.streams.TeeServletOutputStream;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;

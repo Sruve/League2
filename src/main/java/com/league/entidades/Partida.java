@@ -6,6 +6,7 @@ import lombok.Setter;
 import no.stelar7.api.r4j.pojo.lol.match.v5.LOLMatch;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor
@@ -33,14 +34,12 @@ public class Partida {
   private long fechaCreacionT;
 
   @Column(name = "fechaFinalizacionT")
-  private long fechaFinalizacionT;
+  private Long fechaFinalizacionT;
 
-  @ManyToMany
-  @JoinTable(
-      name = "RELA_PARTIDA_CUENTA",
-      joinColumns = {@JoinColumn(name = "ID_PARTIDA")},
-      inverseJoinColumns = {@JoinColumn(name = "ID_CUENTA")})
-  private List<Cuenta> cuentas;
+  @OneToMany
+  @JoinColumn(name = "ID_PARTIDA")
+  private List<PartidaCuenta> partidaCuentas = new ArrayList<>();
+
 
   public Partida(LOLMatch lolMatch) {
     this.gameId = lolMatch.getGameId();

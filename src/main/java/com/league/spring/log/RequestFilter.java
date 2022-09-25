@@ -1,4 +1,4 @@
-package com.league.log;
+package com.league.spring.log;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;

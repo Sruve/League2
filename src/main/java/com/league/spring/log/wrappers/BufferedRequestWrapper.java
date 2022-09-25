@@ -1,7 +1,7 @@
-package com.league.log.wrappers;
+package com.league.spring.log.wrappers;
 
 
-import com.league.log.streams.BufferedServletInputStream;
+import com.league.spring.log.streams.BufferedServletInputStream;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;

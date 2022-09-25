@@ -39,13 +39,9 @@ public class Cuenta {
 
   @Column(name = "fechaRevision")
   private Date fechaRevision;
-
-  @ManyToMany
-  @JoinTable(
-      name = "RELA_PARTIDA_CUENTA",
-      joinColumns = {@JoinColumn(name = "ID_CUENTA")},
-      inverseJoinColumns = {@JoinColumn(name = "ID_PARTIDA")})
-  private List<Partida> partidas;
+  @OneToMany
+  @JoinColumn(name = "ID_CUENTA")
+  private List<PartidaCuenta> partidaCuentas = new ArrayList<>();
 
   public Cuenta(Summoner summoner) {
     this.puuid = summoner.getPUUID();
@@ -56,8 +52,7 @@ public class Cuenta {
     this.fechaRevision = new Date();
   }
 
-  public void addPartida(Partida partida) {
-    if (partidas == null) this.partidas = new ArrayList<>();
-    this.partidas.add(partida);
+  public void addPartidaCuenta(PartidaCuenta partidaCuenta){
+    this.partidaCuentas.add(partidaCuenta);
   }
 }

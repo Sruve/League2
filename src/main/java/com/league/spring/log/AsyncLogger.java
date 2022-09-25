@@ -1,4 +1,4 @@
-package com.league.log;
+package com.league.spring.log;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;

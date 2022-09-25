@@ -9,5 +9,5 @@ import java.util.Optional;
 @Repository
 public interface PartidaRepository extends JpaRepository<Partida, Integer> {
 
-    Optional<Partida> findByGameId(String gameId);
+    Optional<Partida> findByGameId(long gameId);
 }

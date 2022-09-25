@@ -1,4 +1,4 @@
-package com.league.swagger;
+package com.league.spring.swagger;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

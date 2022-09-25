@@ -1,7 +1,7 @@
-package com.league.log;
+package com.league.spring.log;
 
-import com.league.log.wrappers.BufferedRequestWrapper;
-import com.league.log.wrappers.BufferedResponseWrapper;
+import com.league.spring.log.wrappers.BufferedRequestWrapper;
+import com.league.spring.log.wrappers.BufferedResponseWrapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

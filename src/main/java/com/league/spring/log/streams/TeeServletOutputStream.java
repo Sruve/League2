@@ -1,4 +1,4 @@
-package com.league.log.streams;
+package com.league.spring.log.streams;
 
 import org.apache.commons.io.output.TeeOutputStream;
 
