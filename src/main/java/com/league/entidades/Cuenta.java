@@ -3,6 +3,7 @@ package com.league.entidades;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import no.stelar7.api.r4j.pojo.lol.league.LeagueEntry;
 import no.stelar7.api.r4j.pojo.lol.summoner.Summoner;
 
 import javax.persistence.*;
@@ -22,23 +23,33 @@ public class Cuenta {
   @Column(name = "ID")
   private Integer id;
 
-  @Column(name = "puuid")
+  @Column(name = "PUUID", unique = true)
   private String puuid;
 
-  @Column(name = "accountId")
+  @Column(name = "ACCOUNT_ID")
   private String accountId;
 
-  @Column(name = "summonerId")
+  @Column(name = "SUMMONER_ID")
   private String summonerId;
 
-  @Column(name = "nombre")
+  @Column(name = "NOMBRE")
   private String nombre;
 
-  @Column(name = "nivel")
+  @Column(name = "NIVEL")
   private int nivel;
 
-  @Column(name = "fechaRevision")
+  @Column(name = "FECHA_REVISION")
   private Date fechaRevision;
+
+  @Column(name = "RANGO")
+  private String rank;
+
+  @Column(name = "TIER")
+  private String tier;
+
+  @Column(name = "LPS")
+  private int lps;
+
   @OneToMany
   @JoinColumn(name = "ID_CUENTA")
   private List<PartidaCuenta> partidaCuentas = new ArrayList<>();
@@ -52,7 +63,13 @@ public class Cuenta {
     this.fechaRevision = new Date();
   }
 
-  public void addPartidaCuenta(PartidaCuenta partidaCuenta){
+  public void updateRank(LeagueEntry leagueEntry) {
+    this.rank = leagueEntry.getRank();
+    this.tier = leagueEntry.getTier();
+    this.lps = leagueEntry.getLeaguePoints();
+  }
+
+  public void addPartidaCuenta(PartidaCuenta partidaCuenta) {
     this.partidaCuentas.add(partidaCuenta);
   }
 }

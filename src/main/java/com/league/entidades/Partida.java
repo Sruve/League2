@@ -21,20 +21,26 @@ public class Partida {
   @Column(name = "ID")
   private Integer id;
 
-  @Column(name = "gameId")
+  @Column(name = "GAME_ID")
   private long gameId;
 
-  @Column(name = "fechaCreacion")
+  @Column(name = "FECHA_CREACION")
   private long fechaCreacion;
 
-  @Column(name = "duracion")
+  @Column(name = "DURACION")
   private int duracion;
 
-  @Column(name = "fechaCreacionT")
+  @Column(name = "FECHA_CREACION_T")
   private long fechaCreacionT;
 
-  @Column(name = "fechaFinalizacionT")
+  @Column(name = "FECHA_FINALIZACION_T")
   private Long fechaFinalizacionT;
+
+  @Column(name = "TIPO_PARTIDA")
+  private String tipoPartida;
+
+  @Column(name = "PARCHE")
+  private String parche;
 
   @OneToMany
   @JoinColumn(name = "ID_PARTIDA")
@@ -47,5 +53,7 @@ public class Partida {
     this.duracion = lolMatch.getGameDuration();
     this.fechaCreacionT = lolMatch.getGameStartTimestamp();
     this.fechaFinalizacionT = lolMatch.getGameEndTimestamp();
+    this.tipoPartida = lolMatch.getQueue().getApiName();
+    this.parche = lolMatch.getGameVersion();
   }
 }

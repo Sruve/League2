@@ -21,8 +21,9 @@ public class TipoPartida {
     @Column(name = "CODIGO")
     private String codigo;
 
-    @Column(name = "valor")
+    @Column(name = "VALOR")
     private String valor;
+
 
 
 }

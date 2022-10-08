@@ -28,7 +28,7 @@ public class PartidaCuenta {
   @JoinColumn(name = "ID_PARTIDA")
   private Partida partida;
 
-  @Column(name = "equipo")
+  @Column(name = "EQUIPO")
   private int equipo;
 
   public PartidaCuenta(Partida partida, Cuenta cuenta){

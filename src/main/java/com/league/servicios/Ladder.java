@@ -3,7 +3,6 @@ package com.league.servicios;
 import com.league.SecretFile;
 import com.league.entidades.Cuenta;
 import com.league.entidades.Partida;
-import com.league.entidades.PartidaCuenta;
 import com.league.repositorios.CuentaRepository;
 import com.league.repositorios.PartidaCuentaRepository;
 import com.league.repositorios.PartidaRepository;
@@ -19,14 +18,15 @@ import no.stelar7.api.r4j.impl.lol.builders.matchv5.match.MatchBuilder;
 import no.stelar7.api.r4j.impl.lol.raw.LeagueAPI;
 import no.stelar7.api.r4j.pojo.lol.league.LeagueEntry;
 import no.stelar7.api.r4j.pojo.lol.match.v5.LOLMatch;
-import no.stelar7.api.r4j.pojo.lol.match.v5.MatchParticipant;
 import no.stelar7.api.r4j.pojo.lol.summoner.Summoner;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Component
@@ -37,6 +37,7 @@ public class Ladder {
   @Autowired CuentaRepository cuentaRepository;
   @Autowired PartidaRepository partidaRepository;
   @Autowired PartidaCuentaRepository partidaCuentaRepository;
+  @Autowired ProcesarPartida procesarPartida;
 
   MatchBuilder mb = new MatchBuilder(RegionShard.EUROPE);
 
@@ -78,44 +79,56 @@ public class Ladder {
       if (cuenta == null) {
         Summoner summoner = llamadaSummonerBySummonerId(summonerId);
         cuenta = new Cuenta(summoner);
+        cuenta.updateRank(leagueEntry);
         cuentaRepository.save(cuenta);
       }
     }
     log.info("Finaliza barrido del Ladder");
+    barrerPartidas();
   }
 
+  @EventListener(ApplicationReadyEvent.class)
   public void barrerPartidas() {
-    List<Cuenta> cuentas = cuentaRepository.findAll();
-
+    List<Cuenta> cuentas = cuentaRepository.findAllByOrderByLpsDesc();
+    int contador = 1;
     for (Cuenta cuenta : cuentas) {
       Summoner summoner = llamadaSummonerByPuuid(cuenta.getPuuid());
+      log.info(summoner.getName() + " " + contador++);
       LazyList<String> matchHistory =
-          summoner.getLeagueGames().withType(MatchlistMatchType.RANKED).withQueue(GameQueueType.TEAM_BUILDER_RANKED_SOLO).getLazy();
+          summoner
+              .getLeagueGames()
+              .withType(MatchlistMatchType.RANKED)
+              .withQueue(GameQueueType.TEAM_BUILDER_RANKED_SOLO)
+              .withPlatform(LeagueShard.EUW1)
+              .getLazy();
       for (String matchId : matchHistory) {
-        long matchIdLong = Long.parseLong(matchId.substring(5));
-        Partida partida = partidaRepository.findByGameId(matchIdLong).orElse(null);
+        if (!matchId.contains("EUW")) continue;
+        Partida partida =
+            partidaRepository.findByGameId(Long.parseLong(matchId.substring(5))).orElse(null);
         if (partida == null) {
           LOLMatch match = llamadaMatch(matchId);
+          if (match == null || match.getGameId() == 0) continue;
           partida = new Partida(match);
           partidaRepository.save(partida);
-          procesarPartida(match, partida);
+          procesarPartida.procesarPartida(match, partida);
         }
       }
     }
   }
 
-  private void procesarPartida(LOLMatch match, Partida partida) {
-    for (MatchParticipant participant : match.getParticipants()) {
-      Cuenta cuenta = cuentaRepository.findByPuuid(participant.getPuuid()).orElse(null);
-      if (cuenta == null) {
-        Summoner summoner = llamadaSummonerByPuuid(participant.getPuuid());
-        cuenta = new Cuenta(summoner);
-        cuentaRepository.save(cuenta);
+  public void procesarRank() {
+    log.warn("Scheduled procesarRank: Comienza");
+    List<Cuenta> cuentas = cuentaRepository.findAllByOrderByFechaRevisionDesc();
+    for (Cuenta cuenta : cuentas) {
+      List<LeagueEntry> leagueEntryList =
+          LeagueAPI.getInstance().getLeagueEntries(LeagueShard.EUW1, cuenta.getSummonerId());
+      for (LeagueEntry leagueEntry : leagueEntryList) {
+        if (leagueEntry.getQueueType().equals(GameQueueType.RANKED_SOLO_5X5))
+          cuenta.updateRank(leagueEntry);
       }
-      PartidaCuenta partidaCuenta = new PartidaCuenta(partida, cuenta);
-      partidaCuenta.setEquipo(participant.getTeam().getValue());
-      partidaCuentaRepository.save(partidaCuenta);
+      cuentaRepository.save(cuenta);
     }
+    log.warn("Scheduled procesarRank: Acaba");
   }
 
   private List<LeagueEntry> llamadaLadder(TierDivisionType tierDivisionType, int page) {
@@ -136,24 +149,5 @@ public class Ladder {
 
   private LOLMatch llamadaMatch(String matchId) {
     return mb.withId(matchId).getMatch();
-  }
-
-  private static Map<String, Integer> sortByValue(Map<String, Integer> unsortMap, boolean order) {
-    List<Map.Entry<String, Integer>> list = new LinkedList<>(unsortMap.entrySet());
-
-    // Sorting the list based on values
-    list.sort(
-        (o1, o2) ->
-            order
-                ? o1.getValue().compareTo(o2.getValue()) == 0
-                    ? o1.getKey().compareTo(o2.getKey())
-                    : o1.getValue().compareTo(o2.getValue())
-                : o2.getValue().compareTo(o1.getValue()) == 0
-                    ? o2.getKey().compareTo(o1.getKey())
-                    : o2.getValue().compareTo(o1.getValue()));
-    return list.stream()
-        .collect(
-            Collectors.toMap(
-                Map.Entry::getKey, Map.Entry::getValue, (a, b) -> b, LinkedHashMap::new));
   }
 }
